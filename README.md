@@ -62,5 +62,8 @@ Red Sindhi...
 (Add more by retraining the model)
 
 📜 License
+
 This project is for educational and internal use.
+
 Feel free to modify and extend as per your requirements.
+
