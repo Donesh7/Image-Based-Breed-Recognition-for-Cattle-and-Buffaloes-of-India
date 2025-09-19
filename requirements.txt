@@ -1,0 +1,8 @@
+ultralytics
+opencv-python
+Pillow
+imagehash
+icrawler
+scikit-learn
+numpy<2
+opencv-python

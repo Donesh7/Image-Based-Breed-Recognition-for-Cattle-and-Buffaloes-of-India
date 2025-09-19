@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cow Breed Classifier - Agricultural Background</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), 
+                        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:%2389c7c7;stop-opacity:1" /><stop offset="100%" style="stop-color:%236b93d6;stop-opacity:1" /></linearGradient><linearGradient id="field" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:%235e8c3e;stop-opacity:1" /><stop offset="100%" style="stop-color:%2341703e;stop-opacity:1" /></linearGradient><pattern id="grass" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0,10 L10,0 M-2.5,2.5 L2.5,7.5 M7.5,2.5 L12.5,7.5" stroke-width="0.5" stroke="%23295F2D" fill="none" /></pattern></defs><rect width="100%" height="40%" fill="url(%23sky)" /><rect width="100%" height="60%" y="40%" fill="url(%23field)" /><rect width="100%" height="60%" y="40%" fill="url(%23grass)" opacity="0.3"/></svg>');
+            background-size: cover;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 900px;
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, #4a7b9d, #6b93d6);
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.1"><path d="M25,30 Q30,15 45,20 T65,15 T85,25 Q90,35 80,40 T85,55 T75,70 Q65,75 55,70 T30,75 T15,60 Q10,50 20,45 T15,30 T25,30" fill="white" /></svg>');
+            background-size: 100px;
+            opacity: 0.2;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .upload-section, .camera-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #4a7b9d;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #6b93d6;
+        }
+        
+        .upload-area {
+            border: 3px dashed #6b93d6;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #f9f9f9;
+        }
+        
+        .upload-area:hover {
+            background-color: #f0f8ff;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #6b93d6;
+            margin-bottom: 15px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-label {
+            display: block;
+            background: #6b93d6;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 15px;
+        }
+        
+        .file-label:hover {
+            background: #5a82c5;
+        }
+        
+        .camera-feed {
+            width: 100%;
+            height: 250px;
+            background-color: #f0f8ff;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #6b93d6;
+            position: relative;
+        }
+        
+        #camera {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        #snapshot {
+            display: none;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #6b93d6;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background: #5a82c5;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-secondary {
+            background: #89c7c7;
+        }
+        
+        .btn-secondary:hover {
+            background: #78b6b6;
+        }
+        
+        .result-section {
+            padding: 20px;
+            text-align: center;
+            background: #f0f8ff;
+            border-radius: 15px;
+            margin-top: 20px;
+            border-left: 5px solid #6b93d6;
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            color: #4a7b9d;
+            margin-bottom: 15px;
+        }
+        
+        .prediction {
+            font-size: 1.8rem;
+            color: #2c5a8a;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .confidence {
+            font-size: 1.2rem;
+            color: #4a7b9d;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .camera-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .animal-silhouettes {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 15px;
+            opacity: 0.7;
+        }
+        
+        .animal {
+            font-size: 2.5rem;
+            filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .animal-silhouettes {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cow"></i> Cow Breed Classifier</h1>
+            <p class="subtitle">Upload an image or use your webcam to identify cow breeds</p>
+        </header>
+        
+        <div class="content">
+            <div class="upload-section">
+                <h2 class="section-title">Upload Image</h2>
+                <div class="upload-area" id="drop-area">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <p>Drag & drop your image here or click to browse</p>
+                    <input type="file" id="file-input" class="file-input" accept="image/*">
+                    <label for="file-input" class="file-label">Choose File</label>
+                </div>
+                <button class="btn" id="predict-btn"><i class="fas fa-search"></i> Predict Breed</button>
+            </div>
+            
+            <div class="camera-section">
+                <h2 class="section-title">Webcam Capture</h2>
+                <div class="camera-feed">
+                    <video id="camera" autoplay></video>
+                    <div class="animal-silhouettes">
+                        <div class="animal">🐄</div>
+                        <div class="animal">🐃</div>
+                        <div class="animal">🐂</div>
+                    </div>
+                </div>
+                <canvas id="snapshot"></canvas>
+                <div class="camera-controls">
+                    <button class="btn" onclick="startCamera()"><i class="fas fa-camera"></i> Start Camera</button>
+                    <button class="btn btn-secondary" onclick="captureSnapshot()"><i class="fas fa-camera-retro"></i> Capture</button>
+                    <button class="btn" onclick="sendSnapshot()"><i class="fas fa-search"></i> Predict</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="result-section hidden" id="result-section">
+            <h2 class="result-title">Prediction Result</h2>
+            <p>The cow breed is:</p>
+            <p class="prediction" id="prediction-result">Holstein</p>
+            <p class="confidence">Confidence: <span id="confidence-value">92.7%</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Camera functionality
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    document.getElementById("camera").srcObject = stream;
+                })
+                .catch(error => {
+                    console.error("Error accessing camera:", error);
+                    alert("Unable to access camera. Please check permissions.");
+                });
+        }
+        
+        function captureSnapshot() {
+            let video = document.getElementById("camera");
+            let canvas = document.getElementById("snapshot");
+            
+            if (!video.srcObject) {
+                alert("Please start the camera first.");
+                return;
+            }
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0);
+            
+            alert("Snapshot captured! Click Predict to analyze.");
+        }
+        
+        function sendSnapshot() {
+            let canvas = document.getElementById("snapshot");
+            
+            if (canvas.width === 0) {
+                alert("Please capture a snapshot first.");
+                return;
+            }
+            
+            canvas.toBlob(blob => {
+                let formData = new FormData();
+                formData.append("file", blob, "snapshot.jpg");
+                
+                // Simulate prediction result (in a real app, this would be a fetch call)
+                simulatePredictionResult();
+            });
+        }
+        
+        // File upload functionality
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const predictBtn = document.getElementById('predict-btn');
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.style.borderColor = '#4a7b9d';
+            dropArea.style.backgroundColor = '#e0f0ff';
+        }
+        
+        function unhighlight() {
+            dropArea.style.borderColor = '#6b93d6';
+            dropArea.style.backgroundColor = '#f9f9f9';
+        }
+        
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            
+            // Display file name
+            if (files.length > 0) {
+                dropArea.querySelector('p').textContent = `File selected: ${files[0].name}`;
+            }
+        }
+        
+        // Handle file input change
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                dropArea.querySelector('p').textContent = `File selected: ${this.files[0].name}`;
+
+            }
+        });
+        
+        // Predict button click
+        predictBtn.addEventListener('click', function() {
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("Please select an image first.");
+                return;
+            }
+            
+            // In a real application, you would submit the form here
+            // For demonstration, we'll simulate a result
+            simulatePredictionResult();
+        });
+        
+        // Simulate prediction result (to be replaced with actual server communication)
+        function simulatePredictionResult() {
+            // Show loading state
+            const resultSection = document.getElementById('result-section');
+            resultSection.classList.remove('hidden');
+            document.getElementById('prediction-result').textContent = 'Analyzing...';
+            document.getElementById('confidence-value').textContent = '--';
+            
+            // Simulate server response delay
+            setTimeout(() => {
+                const breeds = ['Holstein', 'Jersey', 'Angus', 'Hereford', 'Guernsey', 'Limousin'];
+                const randomBreed = breeds[Math.floor(Math.random() * breeds.length)];
+                const randomConfidence = (Math.random() * 30 + 70).toFixed(1);
+                
+                document.getElementById('prediction-result').textContent = randomBreed;
+               document.getElementById('confidence-value').textContent = `${randomConfidence}%`;
+            }, 1500);
+        }
+        
+        // Add cattle and buffalo silhouettes to the background
+        function addAnimalsToBackground() {
+            const body = document.body;
+            for (let i = 0; i < 8; i++) {
+                const animal = document.createElement('div');
+                animal.style.position = 'fixed';
+                animal.style.fontSize = Math.random() * 30 + 20 + 'px';
+                animal.style.opacity = Math.random() * 0.2 + 0.05;
+                animal.style.zIndex = '-1';
+                animal.style.top = Math.random() * 100 + '%';
+                animal.style.left = Math.random() * 100 + '%';
+                animal.textContent = Math.random() > 0.5 ? '🐄' : '🐃';
+                animal.style.transform = `scale(${Math.random() > 0.5 ? 1 : -1}, 1)`;
+
+                body.appendChild(animal);
+            }
+        }
+        
+        // Initialize the page
+        window.addEventListener('load', function() {
+            addAnimalsToBackground();
+        });
+    </script>
+</body>
+</html>

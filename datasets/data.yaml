@@ -1,0 +1,19 @@
+# YOLOv8 dataset configuration
+
+path: C:/Users/Dell/DQAI_3/datasets
+
+train: train
+val: train  # (you can later split into val folder)
+test: 
+
+names:
+  0: Gir
+  1: Sahiwal
+  2: Tharparkar
+  3: Red_Sindhi
+  4: Kankrej
+  5: Hariana
+  6: Murrah
+  7: Jaffarabadi
+  8: Surti
+  9: Mehsana
